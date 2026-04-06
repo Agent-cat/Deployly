@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
@@ -17,14 +18,21 @@ async function Init() {
   const p = exec(`cd ${outDirPath} && npm install && npm run build`);
 
   // Build Logs
-  p.stdout.on("on", (data) => {
+  p.stdout.on("data", (data) => {
     console.log(data.toString());
   });
-  p.stdout.on("error", (err) => {
-    console.log(err.toString());
+  p.stderr.on("data", (data) => {
+    console.error(`Build error: ${data.toString()}`);
+  });
+  p.on("error", (err) => {
+    console.error(`Execution error: ${err.message}`);
   });
 
-  p.on("close", async () => {
+  p.on("close", async (code) => {
+    if (code !== 0) {
+      console.error(`======BUILD FAILED with code ${code}======`);
+      return;
+    }
     console.log("======BUILD COMPLETED======");
     // Getting the Path of Dist folder
     const distFolderPath = path.join(__dirname, "output", "dist");
