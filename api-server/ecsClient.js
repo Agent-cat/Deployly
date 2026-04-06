@@ -1,7 +1,7 @@
 require("dotenv").config();
-const { S3Client } = require("@aws-sdk/client-s3");
+const { ECSClient } = require("@aws-sdk/client-ecs");
 
-const s3Client = new S3Client({
+const ecsClient = new ECSClient({
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.PROCESSKEYID,
@@ -9,5 +9,4 @@ const s3Client = new S3Client({
   },
 });
 
-
-module.exports = s3Client;
+module.exports = ecsClient;
