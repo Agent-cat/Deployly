@@ -12,18 +12,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Github } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 
 export default function Navbar() {
   const { data: session, isPending } = authClient.useSession();
+  const pathname = usePathname();
 
-  const handleSignIn = async () => {
-    await authClient.signIn.social({
-      provider: "github",
-      callbackURL: "/",
-    });
-  };
+  // Hide Navbar on Auth pages
+  const isAuthPage = pathname === "/signin" || pathname === "/signup";
 
   const handleSignOut = async () => {
     await authClient.signOut({
@@ -34,6 +31,8 @@ export default function Navbar() {
         }
     });
   };
+
+  if (isAuthPage) return null;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/5 bg-background shadow-2xl backdrop-blur-md">
