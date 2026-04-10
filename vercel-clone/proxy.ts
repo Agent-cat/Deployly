@@ -4,7 +4,7 @@ export function proxy(request: NextRequest) {
   const hostname = request.headers.get('host')
 
   // Define our main domains
-  const mainDomains = ['localhost:3000', 'vercel-clone.localhost:3000', 'klfemflare.in']
+  const mainDomains = ['localhost:3000', 'vercel-clone.localhost:3000', 'klfemflare.in', '18.60.117.242.nip.io:3000']
 
   if (hostname && !mainDomains.includes(hostname)) {
     const isIP = /^[\d\.:]+$/.test(hostname)

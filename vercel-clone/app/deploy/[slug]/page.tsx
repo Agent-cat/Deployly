@@ -60,7 +60,8 @@ export default function DeploymentPage() {
   useEffect(() => {
     if (!slug) return;
 
-    const socket = io("http://localhost:9001");
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || `http://${window.location.hostname}:9001`;
+    const socket = io(socketUrl);
     socketRef.current = socket;
 
     socket.on("connect", () => {
