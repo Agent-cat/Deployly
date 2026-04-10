@@ -26,7 +26,8 @@ export default function DeploymentPage() {
   const logEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
 
-  const deployedURL = `http://${slug}.localhost:3000`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "localhost:3000";
+  const deployedURL = `http://${slug}.${baseUrl}`;
 
   useEffect(() => {
     const scroll = () => logEndRef.current?.scrollIntoView({ behavior: "smooth" });
