@@ -5,10 +5,23 @@ const path = require("path");
 const s3Client = require("./s3-client.js");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const mime = require("mime-types");
+const Redis = require("ioredis");
+
+
+const publisher = new Redis(process.env.REDIS_URL);
+
 
 const PROJECT_ID = process.env.PROJECT_ID;
 
+const publishLog = ( log ) => {
+  return publisher.publish(`logs:${PROJECT_ID}`, JSON.stringify({ log }));
+};
+
+
 async function Init() {
+
+  publishLog("Starting Build...");
+
   //  Create the full path of a folder named output inside the current file’s directory.
   //__dirname means: the folder where the current JavaScript file exists
   const outDirPath = path.join(__dirname, "output");
@@ -20,19 +33,25 @@ async function Init() {
   // Build Logs
   p.stdout.on("data", (data) => {
     console.log(data.toString());
+    publishLog(data.toString());
   });
   p.stderr.on("data", (data) => {
     console.error(`Build error: ${data.toString()}`);
+    publishLog(data.toString());
   });
   p.on("error", (err) => {
     console.error(`Execution error: ${err.message}`);
+    publishLog(`Execution error: ${err.message}`);
   });
 
   p.on("close", async (code) => {
     if (code !== 0) {
+      await publishLog(`======BUILD FAILED with code ${code}======`);
       console.error(`======BUILD FAILED with code ${code}======`);
-      return;
+      publisher.quit();
+      process.exit(1);
     }
+    publishLog("======BUILD COMPLETED======");
     console.log("======BUILD COMPLETED======");
     // Getting the Path of Dist folder
     const distFolderPath = path.join(__dirname, "output", "dist");
@@ -50,6 +69,7 @@ async function Init() {
 
       // Uploading to s3
       console.log(`Uploading ${filePath}`);
+      publishLog(`Uploading ${filePath}`);
       const command = new PutObjectCommand({
         Bucket: "vishnu-vercel-output",
         Key: `__output/${PROJECT_ID}/${file}`, // File path in s3
@@ -59,9 +79,13 @@ async function Init() {
 
       await s3Client.send(command);
       console.log(`${filePath} Uploaded`);
+      publishLog(`${filePath} Uploaded`);
     }
 
     console.log("DONE.....");
+    await publishLog("DONE.....");
+    publisher.quit();
+    process.exit(0);
   });
 }
 
