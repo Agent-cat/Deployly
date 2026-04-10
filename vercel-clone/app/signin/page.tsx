@@ -36,9 +36,9 @@ export default function SignInPage() {
           </p>
         </div>
 
-        <Card className="border-white/[0.08] bg-zinc-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+        <Card className="border-white/8 bg-zinc-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
           {/* Subtle top border illumination */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           <CardHeader className="space-y-1 pb-4 pt-8 text-center">
             <CardTitle className="text-xl font-semibold text-white">Identity Verification</CardTitle>
@@ -64,7 +64,7 @@ export default function SignInPage() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-white/5" />
               </div>
-              
+
             </div>
           </CardContent>
 

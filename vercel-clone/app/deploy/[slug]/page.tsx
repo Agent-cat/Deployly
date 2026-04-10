@@ -6,12 +6,17 @@ import { Terminal, Globe, Rocket, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getProjectStatus } from "@/actions/status";
+import { deleteProject } from "@/actions/delete";
+import { Trash2, AlertTriangle } from "lucide-react";
 
 export default function DeploymentPage() {
   const { slug } = useParams() as { slug: string };
+  const router = useRouter();
   const [status, setStatus] = useState<"deploying" | "ready" | "error">("deploying");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [logs, dispatchLogs] = useReducer((state: string[], action: { type: 'add', payload: string } | { type: 'clear' }) => {
     switch (action.type) {
       case 'add':
@@ -90,7 +95,21 @@ export default function DeploymentPage() {
     };
   }, [slug]);
 
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteProject(slug);
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Deletion failed:", error);
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      alert("Failed to delete project. Please try again.");
+    }
+  };
+
   return (
+    <>
     <div className="max-w-6xl mx-auto px-6 py-16">
       {/* Enhanced Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-16">
@@ -123,8 +142,8 @@ export default function DeploymentPage() {
              </div>
            ) : status === "ready" ? (
              <div className="flex items-center gap-3 text-black bg-white px-6 py-2.5 rounded-full text-xs font-semibold shadow-lg shadow-white/5">
-               <CheckCircle2 className="w-3.5 h-3.5" />
-               System Ready
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                System Ready
              </div>
            ) : (
             <div className="flex items-center gap-3 text-zinc-400 bg-zinc-900 px-6 py-2.5 rounded-full text-xs font-medium border border-white/5">
@@ -132,6 +151,15 @@ export default function DeploymentPage() {
               Build Failed
             </div>
            )}
+
+           <button
+             onClick={() => setShowDeleteConfirm(true)}
+             disabled={isDeleting}
+             className="flex items-center gap-3 text-zinc-500 hover:text-red-400 bg-zinc-950/40 hover:bg-red-500/10 px-4 py-2.5 rounded-full text-xs font-medium border border-white/5 hover:border-red-500/20 transition-all cursor-pointer"
+           >
+             <Trash2 className="w-3.5 h-3.5" />
+             Delete
+           </button>
         </div>
       </div>
 
@@ -313,6 +341,67 @@ export default function DeploymentPage() {
         </div>
 
       </div>
+
+    {/* Delete Confirmation Modal */}
+    <AnimatePresence>
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !isDeleting && setShowDeleteConfirm(false)}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50" />
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Delete Project?</h3>
+                <p className="text-zinc-500 text-sm">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-zinc-400 text-sm mb-8 leading-relaxed">
+              Are you sure you want to delete <span className="text-white font-mono">{slug}</span>? This will permanently remove all deployment files from S3 and discard all build history.
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                disabled={isDeleting}
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white text-sm font-semibold border border-white/5 transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isDeleting}
+                onClick={handleDelete}
+                className="flex-1 px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold shadow-lg shadow-red-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Confirm Delete"
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
     </div>
+    </>
   );
 }

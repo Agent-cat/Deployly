@@ -36,9 +36,9 @@ export default function SignUpPage() {
           </p>
         </div>
 
-        <Card className="border-white/[0.08] bg-zinc-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+        <Card className="border-white/8 bg-zinc-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
           {/* Animated gradient border effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent pointer-events-none" />
 
           <CardHeader className="space-y-1 pb-4 pt-8 text-center">
             <CardTitle className="text-xl font-semibold text-white">Create Account</CardTitle>
@@ -66,7 +66,7 @@ export default function SignUpPage() {
                 </div>
               </Button>
 
-              
+
             </div>
 
             <div className="relative">

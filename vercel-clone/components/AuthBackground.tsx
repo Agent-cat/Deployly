@@ -52,7 +52,7 @@ export function AuthBackground() {
       />
 
       {/* Radial fade for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-zinc-950" />
+      <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-transparent to-zinc-950" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#09090b_100%)]" />
     </div>
   );
