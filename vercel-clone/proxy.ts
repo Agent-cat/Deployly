@@ -7,6 +7,12 @@ export function proxy(request: NextRequest) {
   const mainDomains = ['localhost:3000', 'vercel-clone.localhost:3000']
 
   if (hostname && !mainDomains.includes(hostname)) {
+    const isIP = /^[\d\.:]+$/.test(hostname)
+
+    if (isIP) {
+      return NextResponse.next()
+    }
+
     // This is a subdomain (slug)
     const subdomain = hostname.split('.')[0]
 
