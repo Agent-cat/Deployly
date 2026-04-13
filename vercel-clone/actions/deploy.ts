@@ -13,7 +13,7 @@ export async function deployProject(gitURL: string) {
   }
 
   const session = await auth.api.getSession({
-    headers: await headers()
+    headers: await headers(),
   });
 
   if (!session?.user) {
@@ -21,7 +21,7 @@ export async function deployProject(gitURL: string) {
   }
 
   const projectSlug = generateSlug(); // Generate random slug
-  const name = gitURL.split('/').pop()?.replace('.git', '') || projectSlug;
+  const name = gitURL.split("/").pop()?.replace(".git", "") || projectSlug;
 
   // Create Project in DB
   const project = await prisma.project.create({
@@ -29,16 +29,16 @@ export async function deployProject(gitURL: string) {
       name,
       gitURL,
       subdomain: projectSlug,
-      userId: session.user.id
-    }
+      userId: session.user.id,
+    },
   });
 
   // Create Deployment record
   const deployment = await prisma.deployment.create({
     data: {
       projectId: project.id,
-      status: "QUEUED"
-    }
+      status: "QUEUED",
+    },
   });
 
   const command = new RunTaskCommand({
@@ -64,7 +64,7 @@ export async function deployProject(gitURL: string) {
             { name: "PROJECT_ID", value: projectSlug },
             { name: "GIT_REPOSITORY_URL", value: gitURL },
             { name: "DEPLOYMENT_ID", value: deployment.id },
-            { name: "REDIS_URL", value: process.env.REDIS_URL }
+            { name: "REDIS_URL", value: process.env.REDIS_URL },
           ],
         },
       ],
@@ -80,15 +80,13 @@ export async function deployProject(gitURL: string) {
       deploymentId: deployment.id,
       url: `http://${projectSlug}.${process.env.NEXT_PUBLIC_BASE_URL || "localhost:3000"}`,
     };
-
   } catch (error) {
     console.error("Error sending ECS task:", error);
     // Should update deployment to FAIL
     await prisma.deployment.update({
       where: { id: deployment.id },
-      data: { status: "FAIL" }
+      data: { status: "FAIL" },
     });
     throw new Error("Failed to queue project build");
   }
 }
-
